@@ -1,0 +1,43 @@
+#!/bin/bash
+# ==============================================================================
+# PROJECT: MTB ESX1 IDR Analysis
+# SCRIPT: run_slimfinder.sh
+# AUTHOR: Lenovo User
+# DATE: 2026-02-24
+#
+# SOFTWARE VERSIONS:
+# - SLiMSuite: V5.4.0
+# - IUPred: 2a (Local installation)
+# - Python: 3.10.x
+#
+# PURPOSE: Identify SLiMs in ESX1_IDR_genes_wrapped.fasta using
+#          disorder-based masking to focus on intrinsically disordered regions.
+# ==============================================================================
+# SLiMFinder requires perl
+sudo apt update
+install perl git build-essential python3
+cd
+git clone https://github.com/slimsuite/SLiMSuite.git #download SLiMSuite
+perl tools/slimfinder.py -h
+nano ~/SLiMSuite/tools/slimfinder.py  # changed that it doesn't need a specific python version but rather env python
+chmod +x ~/SLiMSuite/tools/slimfinder.py
+sudo cpan install DBI DBD::SQLite
+#SLiMFinder requires blast
+sudo apt update
+sudo apt install ncbi-blast+
+which blastp
+#convert input folder to eliminate windows spaces
+sudo apt install dos2unix
+dos2unix ~/mtb_project/data/ESX1_IDR_genes.fasta
+cd ~/mtb_project/data
+#made a new file with limited line length as SliMFinder was struggling
+# also manually changed the file to only contain the gene names directly as it was showing that genes were duplicated
+fold -w 80 ESX1_IDR_genes.fasta > ESX1_IDR_genes_wrapped.fasta
+# sometimes needed to do housekeeping for proper function
+rm ~/mtb_project/data/ESX1_IDR_genes.fasta.*
+# downloaded the gz file from the email after requesting it from the website
+tar -xzvf iupred2a.tar.gz
+chmod +x iupred2a/iupred2a.py
+export PATH=$PATH:/home/lenovo/SLiMSuite/tools/iupred2a/
+which iupred
+python3 /home/lenovo/SLiMSuite/tools/slimfinder.py   seqin=/home/lenovo/mtb_project/data/ESX1_IDR_genes_wrapped.fasta    dismask=T   disdriver=iupred   iupredpath=/home/lenovo/SLiMSuite/tools/iupred2a/   sh_paths=T   buildupc=F   blast=F   minocc=2   sigcut=0.5   resdir=/home/lenovo/mtb_project/results_medsig2/

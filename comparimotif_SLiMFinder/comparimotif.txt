@@ -1,0 +1,1 @@
+python comparimotif.py motifs=/home/lenovo/all_idrs.txt searchdb=/home/lenovo/elm_class.txt out=clustering_results_trial.csv

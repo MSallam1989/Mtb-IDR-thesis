@@ -1,0 +1,23 @@
+dos2unix ~/mtb_project/data/all_mtb_idr_sequences.fasta
+cd ~/mtb_project/data
+#prepare a version of fasta without header repeats --> avoid slimfinder error
+awk '/^>/ {
+    old=$0;
+    count++;
+    new=">seq"count;
+    print new;
+    print substr(old,2) "\t" substr(new,2) >> "name_mapping_v2.txt";
+    next
+} { print }' all_mtb_idr_sequences.fasta > clean_ids_v2.fasta
+
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+conda create -n slim_env python=2.7
+
+python /home/lenovo/SLiMSuite/tools/slimfinder.py   seqin=/home/lenovo/mtb_project/data/clean_ids_v2.fasta  maxseq=2000  walltime=24 dismask=F   sh_paths=T   buildupc=F   blast=F   minocc=2   sigcut=0.1   resdir=/home/lenovo/mtb_project/results_allIDRs_oldpython/
+
+# in order to do blast to not consider each hit independently
+python /home/lenovo/SLiMSuite/tools/slimfinder.py   seqin=/home/lenovo/mtb_project/data/all_mtb_idr_sequences.fasta  maxseq=2000  walltime=24 dismask=F   sh_paths=T   buildupc=T   blast=T   minocc=5   sigcut=0.05 extras=-1  resdir=/home/lenovo/mtb_project/results_allIDRs_oldpython_blast_final/
+
+# in order to create occurrences file
+ python /home/lenovo/SLiMSuite/tools/slimfinder.py   seqin=/home/lenovo/mtb_project/data/all_mtb_idr_sequences.fasta  maxseq=2000  walltime=24 dismask=F   sh_paths=T   buildupc=T   blast=T   minocc=5   sigcut=0.05 resdir=/home/lenovo/mtb_project/results_allIDRs_oldpython_blast_final_noextras/
